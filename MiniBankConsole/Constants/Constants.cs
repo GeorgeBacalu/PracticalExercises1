@@ -1,7 +1,6 @@
 ﻿namespace MiniBankConsole.Constants;
-public class Constants
+public static class Constants
 {
-    private Constants() { }
-
-    public const decimal DefaultOverdraftLimit = -200m;
+    public const decimal overdraftLimit = -200m;
+    public const decimal interestRate = 0.05m;
 }

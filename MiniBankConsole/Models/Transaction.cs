@@ -1,11 +1,11 @@
 ﻿namespace MiniBankConsole.Models;
 public class Transaction
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public DateTime Date { get; set; }
-    public TransactionType Type { get; set; }
-    public decimal Amount { get; set; }
-    public Guid AccountId { get; set; }
+    public Guid Id { get; } = Guid.NewGuid();
+    public DateTime Date { get; } = DateTime.UtcNow;
+    public TransactionType Type { get; init; }
+    public decimal Amount { get; init; }
+    public Guid AccountId { get; init; }
 }
 
 public enum TransactionType { Invalid, Deposit, Withdrawal, Transfer, Interest }

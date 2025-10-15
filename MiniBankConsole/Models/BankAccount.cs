@@ -3,9 +3,9 @@
 namespace MiniBankConsole.Models;
 public abstract class BankAccount : ITransactable, IStatement
 {
-    public Guid Id { get; init; } = Guid.NewGuid();
+    public Guid Id { get; } = Guid.NewGuid();
     public required string Owner { get; init; }
-    public decimal Balance { get; protected set; }
+    public decimal Balance { get; set; }
 
     public List<Transaction> Transactions { get; set; } = [];
 

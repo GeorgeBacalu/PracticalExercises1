@@ -4,7 +4,7 @@ using static MiniBankConsole.Constants.Constants;
 namespace MiniBankConsole.Models;
 public class CheckingAccount : BankAccount, IOverdraftPolicy
 {
-    public decimal OverdraftLimit => DefaultOverdraftLimit;
+    public decimal OverdraftLimit => overdraftLimit;
 
     public override void Deposit(decimal amount) => throw new NotImplementedException();
 
