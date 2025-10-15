@@ -26,4 +26,6 @@ public abstract class BankAccount : ITransactable, IStatement
         foreach (var transaction in Transactions.OrderByDescending(transaction => transaction.Date))
             Console.WriteLine($"{transaction.Date}: {transaction.Type} - {transaction.Amount:C}");
     }
+
+    public override string ToString() => $"{GetType().Name} (ID: {Id}) - Owner: {Owner}, Balance: {Balance:C}";
 }
