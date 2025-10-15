@@ -6,9 +6,22 @@ public class CheckingAccount : BankAccount, IOverdraftPolicy
 {
     public decimal OverdraftLimit => overdraftLimit;
 
-    public override void Deposit(decimal amount) => throw new NotImplementedException();
+    public override bool Withdraw(decimal amount, out string? error)
+    {
+        if (amount <= 0)
+        {
+            error = "Withdraw amount must be positive";
+            return false;
+        }
+        if (Balance - amount < OverdraftLimit)
+        {
+            error = "Insufficient funds";
+            return false;
+        }
 
-    public override bool Withdraw(decimal amount, out string? error) => throw new NotImplementedException();
-
-    public override void PrintStatement() => throw new NotImplementedException();
+        Balance -= amount;
+        error = null;
+        Transactions.Add(new() { Type = TransactionType.Withdrawal, Amount = amount, AccountId = Id });
+        return true;
+    }
 }
