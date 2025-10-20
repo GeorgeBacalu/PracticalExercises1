@@ -22,10 +22,10 @@ public abstract class BankAccount : ITransactable, IStatement
     public abstract bool Withdraw(decimal amount, out string? error);
     public virtual void PrintStatement()
     {
-        Console.WriteLine($"{GetType().Name} statement for {Owner} (ID: {Id}");
+        Console.WriteLine($"{GetType().Name} statement for {Owner}");
         foreach (var transaction in Transactions.OrderByDescending(transaction => transaction.Date))
             Console.WriteLine($"{transaction.Date}: {transaction.Type} - {transaction.Amount:C}");
     }
 
-    public override string ToString() => $"{GetType().Name} (ID: {Id}) - Owner: {Owner}, Balance: {Balance:C}";
+    public override string ToString() => $"{GetType().Name} - Owner: {Owner}, Balance: {Balance:C}";
 }

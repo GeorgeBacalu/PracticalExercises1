@@ -65,10 +65,14 @@ while (true)
                 AccountRegistry.Withdraw(owner, withdrawAmount);
                 break;
             case 5:
-                AccountRegistry.ViewStatement();
+                Console.Write("Enter owner name: ");
+                owner = Console.ReadLine()?.Trim() ?? "";
+                if (string.IsNullOrWhiteSpace(owner))
+                    Console.WriteLine("Owner name is required");
+                AccountRegistry.ViewStatement(owner);
                 break;
             case 6:
-                AccountRegistry.RunMonthEnd();
+                AccountRegistry.RunMonthEndProcessing();
                 break;
             case 7:
                 Console.WriteLine("Thanks for using the app");

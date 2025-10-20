@@ -37,7 +37,7 @@ public class AccountRegistry
             owner = Console.ReadLine()?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(owner))
                 Console.WriteLine("Owner name is required");
-            if (Accounts.Exists(account => account.Owner.ToLower() == owner.ToLower()))
+            else if (Accounts.Exists(account => account.Owner.ToLower() == owner.ToLower()))
                 Console.WriteLine("Owner name must be unique");
             else break;
         }
@@ -81,11 +81,20 @@ public class AccountRegistry
         if (!withdrawSuccess) throw new BadRequestException(error ?? "Withdraw failed");
     }
 
-    public static void ViewStatement()
+    public static void ViewStatement(string owner)
     {
+        var account = Accounts.FirstOrDefault(account => account.Owner == owner);
+        if (account == null) throw new MissingResourceException("Account not found");
+        account.PrintStatement();
     }
 
-    public static void RunMonthEnd()
+    public static void RunMonthEndProcessing()
     {
+        foreach (var account in Accounts)
+            if (account is SavingsAccount savingsAccount)
+                savingsAccount.ApplyMonthlyInterest();
+            else if (account is LoanAccount loanAccount)
+                loanAccount.ApplyMonthlyInterest();
+        Console.WriteLine("Monthly interest applied for all accounts");
     }
 }
