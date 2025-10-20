@@ -44,8 +44,8 @@ public class AccountRegistry
         while (true)
         {
             Console.Write("Opening deposit: ");
-            var input = Console.ReadLine();
-            if (!decimal.TryParse(input, out balance))
+            var balanceString = Console.ReadLine();
+            if (!decimal.TryParse(balanceString, out balance))
             {
                 Console.WriteLine("Opening deposit must be numeric");
                 continue;
@@ -66,12 +66,19 @@ public class AccountRegistry
         Console.WriteLine($"Created #{Accounts.Count} {account.GetType().Name} for {owner} with balance {balance:C}");
     }
 
-    public static void Deposit()
+    public static void Deposit(string owner, decimal amount)
     {
+        var account = Accounts.FirstOrDefault(account => account.Owner == owner);
+        if (account == null) throw new MissingResourceException("Account not found");
+        account.Deposit(amount);
     }
 
-    public static void Withdraw()
+    public static void Withdraw(string owner, decimal amount)
     {
+        var account = Accounts.FirstOrDefault(account => account.Owner == owner);
+        if (account == null) throw new MissingResourceException("Account not found");
+        var withdrawSuccess = account.Withdraw(amount, out var error);
+        if (!withdrawSuccess) throw new BadRequestException(error ?? "Withdraw failed");
     }
 
     public static void ViewStatement()

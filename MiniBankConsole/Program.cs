@@ -1,6 +1,8 @@
 ﻿using MiniBankConsole.Exceptions;
 using MiniBankConsole.Services;
 
+string? owner;
+
 while (true)
 {
     try
@@ -25,10 +27,42 @@ while (true)
                 AccountRegistry.CreateAccount();
                 break;
             case 3:
-                AccountRegistry.Deposit();
+                Console.Write("Enter owner name: ");
+                owner = Console.ReadLine()?.Trim() ?? "";
+                if (string.IsNullOrWhiteSpace(owner))
+                    Console.WriteLine("Owner name is required");
+                Console.Write("Enter amount to deposit: ");
+                var depositAmountString = Console.ReadLine();
+                if (!decimal.TryParse(depositAmountString, out var depositAmount))
+                {
+                    Console.WriteLine("Amount must be numeric");
+                    break;
+                }
+                if (depositAmount <= 0)
+                {
+                    Console.WriteLine("Amount must be positive");
+                    break;
+                }
+                AccountRegistry.Deposit(owner, depositAmount);
                 break;
             case 4:
-                AccountRegistry.Withdraw();
+                Console.Write("Enter owner name: ");
+                owner = Console.ReadLine()?.Trim() ?? "";
+                if (string.IsNullOrWhiteSpace(owner))
+                    Console.WriteLine("Owner name is required");
+                Console.Write("Enter amount to withdraw: ");
+                var withdrawAmountString = Console.ReadLine();
+                if (!decimal.TryParse(withdrawAmountString, out var withdrawAmount))
+                {
+                    Console.WriteLine("Amount must be numeric");
+                    break;
+                }
+                if (withdrawAmount <= 0)
+                {
+                    Console.WriteLine("Amount must be positive");
+                    break;
+                }
+                AccountRegistry.Withdraw(owner, withdrawAmount);
                 break;
             case 5:
                 AccountRegistry.ViewStatement();
