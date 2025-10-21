@@ -1,8 +1,6 @@
 ﻿using MiniBankConsole.Exceptions;
 using MiniBankConsole.Services;
 
-string? owner, type;
-
 while (true)
 {
     try
@@ -21,113 +19,19 @@ while (true)
         Console.WriteLine();
         switch (option)
         {
-            case 1:
-                AccountRegistry.GetAccounts();
-                break;
-            case 2:
-                AccountRegistry.CreateAccount();
-                break;
-            case 3:
-                while (true)
-                {
-                    Console.Write("Enter owner name: ");
-                    owner = Console.ReadLine()?.Trim() ?? "";
-                    if (string.IsNullOrWhiteSpace(owner))
-                        Console.WriteLine("Owner name is required");
-                    else break;
-                }
-                while (true)
-                {
-                    Console.Write("Enter account type (checking/savings/loan): ");
-                    type = Console.ReadLine()?.Trim().ToLower() ?? "";
-                    if (type != "checking" && type != "savings" && type != "loan")
-                        Console.WriteLine("Invalid or missing account type");
-                    else break;
-                }
-                
-                Console.Write("Enter amount to deposit: ");
-                var depositAmountString = Console.ReadLine();
-                if (!decimal.TryParse(depositAmountString, out var depositAmount))
-                {
-                    Console.WriteLine("Amount must be numeric");
-                    break;
-                }
-                if (depositAmount <= 0)
-                {
-                    Console.WriteLine("Amount must be positive");
-                    break;
-                }
-                
-                AccountRegistry.Deposit(owner, type, depositAmount);
-                break;
-            case 4:
-                while (true)
-                {
-                    Console.Write("Enter owner name: ");
-                    owner = Console.ReadLine()?.Trim() ?? "";
-                    if (string.IsNullOrWhiteSpace(owner))
-                        Console.WriteLine("Owner name is required");
-                    else break;
-                }
-                while (true)
-                {
-                    Console.Write("Enter account type (checking/savings/loan): ");
-                    type = Console.ReadLine()?.Trim().ToLower() ?? "";
-                    if (type != "checking" && type != "savings" && type != "loan")
-                        Console.WriteLine("Invalid or missing account type");
-                    else break;
-                }
-
-                Console.Write("Enter amount to withdraw: ");
-                var withdrawAmountString = Console.ReadLine();
-                if (!decimal.TryParse(withdrawAmountString, out var withdrawAmount))
-                {
-                    Console.WriteLine("Amount must be numeric");
-                    break;
-                }
-                if (withdrawAmount <= 0)
-                {
-                    Console.WriteLine("Amount must be positive");
-                    break;
-                }
-                AccountRegistry.Withdraw(owner, type, withdrawAmount);
-                break;
-            case 5:
-                while (true)
-                {
-                    Console.Write("Enter owner name: ");
-                    owner = Console.ReadLine()?.Trim() ?? "";
-                    if (string.IsNullOrWhiteSpace(owner))
-                        Console.WriteLine("Owner name is required");
-                    else break;
-                }
-                while (true)
-                {
-                    Console.Write("Enter account type (checking/savings/loan): ");
-                    type = Console.ReadLine()?.Trim().ToLower() ?? "";
-                    if (type != "checking" && type != "savings" && type != "loan")
-                        Console.WriteLine("Invalid or missing account type");
-                    else break;
-                }
-
-                AccountRegistry.ViewStatement(owner);
-                break;
-            case 6:
-                AccountRegistry.RunMonthEndProcessing();
-                break;
-            case 7:
-                Console.WriteLine("Thanks for using the app");
-                return;
-            default:
-                throw new BadRequestException("Invalid option");
+            case 1: AccountRegistry.GetAccounts(); break;
+            case 2: AccountRegistry.CreateAccount(); break;
+            case 3: AccountRegistry.Deposit(); break;
+            case 4: AccountRegistry.Withdraw(); break;
+            case 5: AccountRegistry.ViewStatement(); break;
+            case 6: AccountRegistry.RunMonthEndProcessing(); break;
+            case 7: Console.WriteLine("Thanks for using the app"); return;
+            default: throw new BadRequestException("Invalid option");
         }
-        Console.WriteLine("\nPress enter to select another option");
-        Console.ReadKey();
-        Console.Clear();
     }
-    catch (Exception exception)
+    catch (Exception exception) { Console.WriteLine($"Error: {exception.Message}"); }
+    finally
     {
-        Console.WriteLine($"Error: {exception.Message}");
         Console.WriteLine("\nPress enter to select another option");
         Console.ReadKey();
         Console.Clear();
