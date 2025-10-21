@@ -1,7 +1,7 @@
 ﻿using MiniBankConsole.Exceptions;
 using MiniBankConsole.Services;
 
-string? owner;
+string? owner, type;
 
 while (true)
 {
@@ -28,10 +28,23 @@ while (true)
                 AccountRegistry.CreateAccount();
                 break;
             case 3:
-                Console.Write("Enter owner name: ");
-                owner = Console.ReadLine()?.Trim() ?? "";
-                if (string.IsNullOrWhiteSpace(owner))
-                    Console.WriteLine("Owner name is required");
+                while (true)
+                {
+                    Console.Write("Enter owner name: ");
+                    owner = Console.ReadLine()?.Trim() ?? "";
+                    if (string.IsNullOrWhiteSpace(owner))
+                        Console.WriteLine("Owner name is required");
+                    else break;
+                }
+                while (true)
+                {
+                    Console.Write("Enter account type (checking/savings/loan): ");
+                    type = Console.ReadLine()?.Trim().ToLower() ?? "";
+                    if (type != "checking" && type != "savings" && type != "loan")
+                        Console.WriteLine("Invalid or missing account type");
+                    else break;
+                }
+                
                 Console.Write("Enter amount to deposit: ");
                 var depositAmountString = Console.ReadLine();
                 if (!decimal.TryParse(depositAmountString, out var depositAmount))
@@ -44,13 +57,27 @@ while (true)
                     Console.WriteLine("Amount must be positive");
                     break;
                 }
-                AccountRegistry.Deposit(owner, depositAmount);
+                
+                AccountRegistry.Deposit(owner, type, depositAmount);
                 break;
             case 4:
-                Console.Write("Enter owner name: ");
-                owner = Console.ReadLine()?.Trim() ?? "";
-                if (string.IsNullOrWhiteSpace(owner))
-                    Console.WriteLine("Owner name is required");
+                while (true)
+                {
+                    Console.Write("Enter owner name: ");
+                    owner = Console.ReadLine()?.Trim() ?? "";
+                    if (string.IsNullOrWhiteSpace(owner))
+                        Console.WriteLine("Owner name is required");
+                    else break;
+                }
+                while (true)
+                {
+                    Console.Write("Enter account type (checking/savings/loan): ");
+                    type = Console.ReadLine()?.Trim().ToLower() ?? "";
+                    if (type != "checking" && type != "savings" && type != "loan")
+                        Console.WriteLine("Invalid or missing account type");
+                    else break;
+                }
+
                 Console.Write("Enter amount to withdraw: ");
                 var withdrawAmountString = Console.ReadLine();
                 if (!decimal.TryParse(withdrawAmountString, out var withdrawAmount))
@@ -63,13 +90,26 @@ while (true)
                     Console.WriteLine("Amount must be positive");
                     break;
                 }
-                AccountRegistry.Withdraw(owner, withdrawAmount);
+                AccountRegistry.Withdraw(owner, type, withdrawAmount);
                 break;
             case 5:
-                Console.Write("Enter owner name: ");
-                owner = Console.ReadLine()?.Trim() ?? "";
-                if (string.IsNullOrWhiteSpace(owner))
-                    Console.WriteLine("Owner name is required");
+                while (true)
+                {
+                    Console.Write("Enter owner name: ");
+                    owner = Console.ReadLine()?.Trim() ?? "";
+                    if (string.IsNullOrWhiteSpace(owner))
+                        Console.WriteLine("Owner name is required");
+                    else break;
+                }
+                while (true)
+                {
+                    Console.Write("Enter account type (checking/savings/loan): ");
+                    type = Console.ReadLine()?.Trim().ToLower() ?? "";
+                    if (type != "checking" && type != "savings" && type != "loan")
+                        Console.WriteLine("Invalid or missing account type");
+                    else break;
+                }
+
                 AccountRegistry.ViewStatement(owner);
                 break;
             case 6:

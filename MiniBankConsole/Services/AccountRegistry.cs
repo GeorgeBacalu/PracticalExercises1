@@ -69,17 +69,17 @@ public class AccountRegistry
         Console.WriteLine($"\nCreated #{Accounts.Count} {account.GetType().Name} for {owner} with balance {balance:C}");
     }
 
-    public static void Deposit(string owner, decimal amount)
+    public static void Deposit(string owner, string type, decimal amount)
     {
-        var account = Accounts.FirstOrDefault(account => account.Owner == owner);
+        var account = Accounts.FirstOrDefault(account => account.Owner == owner && account.GetType().Name.Replace("Account", "").ToLower() == type);
         if (account == null) throw new MissingResourceException("Account not found");
         if (account.Id == Guid.Empty) throw new MissingResourceException("Account id not found");
         account.Deposit(amount);
     }
 
-    public static void Withdraw(string owner, decimal amount)
+    public static void Withdraw(string owner, string type, decimal amount)
     {
-        var account = Accounts.FirstOrDefault(account => account.Owner == owner);
+        var account = Accounts.FirstOrDefault(account => account.Owner == owner && account.GetType().Name.Replace("Account", "").ToLower() == type);
         if (account == null) throw new MissingResourceException("Account not found");
         if (account.Id == Guid.Empty) throw new MissingResourceException("Account id not found");
         var withdrawSuccess = account.Withdraw(amount, out var error);
