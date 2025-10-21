@@ -15,9 +15,10 @@ while (true)
         Console.WriteLine("5. View statement");
         Console.WriteLine("6. Run month-end");
         Console.WriteLine("7. Exit");
-        Console.Write("Choose your option: ");
+        Console.Write("\nChoose your option: ");
 
         int option = Convert.ToInt32(Console.ReadLine());
+        Console.WriteLine();
         switch (option)
         {
             case 1:
@@ -80,12 +81,15 @@ while (true)
             default:
                 throw new BadRequestException("Invalid option");
         }
-        Console.WriteLine("Press enter to select another option");
+        Console.WriteLine("\nPress enter to select another option");
         Console.ReadKey();
         Console.Clear();
     }
     catch (Exception exception)
     {
         Console.WriteLine($"Error: {exception.Message}");
+        Console.WriteLine("\nPress enter to select another option");
+        Console.ReadKey();
+        Console.Clear();
     }
 }

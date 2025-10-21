@@ -1,5 +1,6 @@
 ﻿using MiniBankConsole.Exceptions;
 using MiniBankConsole.Models;
+using MiniBankConsole.Models.Interfaces;
 
 namespace MiniBankConsole.Services;
 public class AccountRegistry
@@ -37,7 +38,7 @@ public class AccountRegistry
             owner = Console.ReadLine()?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(owner))
                 Console.WriteLine("Owner name is required");
-            else if (Accounts.Exists(account => account.Owner.ToLower() == owner.ToLower()))
+            else if (Accounts.Exists(account => account.Owner.ToLower() == owner.ToLower() && account.GetType().Name.Replace("Account", "").ToLower() == type))
                 Console.WriteLine("Owner name must be unique");
             else break;
         }
@@ -63,13 +64,16 @@ public class AccountRegistry
             _ => throw new BadRequestException("Invalid account type")
         };
         Accounts.Add(account);
-        Console.WriteLine($"Created #{Accounts.Count} {account.GetType().Name} for {owner} with balance {balance:C}");
+        account.Transactions.Add(new() { Type = TransactionType.Deposit, Amount = balance, AccountId = account.Id });
+
+        Console.WriteLine($"\nCreated #{Accounts.Count} {account.GetType().Name} for {owner} with balance {balance:C}");
     }
 
     public static void Deposit(string owner, decimal amount)
     {
         var account = Accounts.FirstOrDefault(account => account.Owner == owner);
         if (account == null) throw new MissingResourceException("Account not found");
+        if (account.Id == Guid.Empty) throw new MissingResourceException("Account id not found");
         account.Deposit(amount);
     }
 
@@ -77,6 +81,7 @@ public class AccountRegistry
     {
         var account = Accounts.FirstOrDefault(account => account.Owner == owner);
         if (account == null) throw new MissingResourceException("Account not found");
+        if (account.Id == Guid.Empty) throw new MissingResourceException("Account id not found");
         var withdrawSuccess = account.Withdraw(amount, out var error);
         if (!withdrawSuccess) throw new BadRequestException(error ?? "Withdraw failed");
     }
@@ -85,16 +90,15 @@ public class AccountRegistry
     {
         var account = Accounts.FirstOrDefault(account => account.Owner == owner);
         if (account == null) throw new MissingResourceException("Account not found");
+        if (account.Id == Guid.Empty) throw new MissingResourceException("Account id not found");
         account.PrintStatement();
     }
 
     public static void RunMonthEndProcessing()
     {
         foreach (var account in Accounts)
-            if (account is SavingsAccount savingsAccount)
-                savingsAccount.ApplyMonthlyInterest();
-            else if (account is LoanAccount loanAccount)
-                loanAccount.ApplyMonthlyInterest();
-        Console.WriteLine("Monthly interest applied for all accounts");
+            if (account is IInterestBearing interestBearing)
+                interestBearing.ApplyMonthlyInterest();
+        Console.WriteLine("Month-end applied (interest/fees)");
     }
 }

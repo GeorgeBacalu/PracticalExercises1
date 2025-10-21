@@ -1,5 +1,4 @@
-﻿using MiniBankConsole.Exceptions;
-using MiniBankConsole.Models.Interfaces;
+﻿using MiniBankConsole.Models.Interfaces;
 
 namespace MiniBankConsole.Models;
 public abstract class BankAccount : ITransactable, IStatement
@@ -10,19 +9,12 @@ public abstract class BankAccount : ITransactable, IStatement
 
     public List<Transaction> Transactions { get; } = [];
 
-    public virtual void Deposit(decimal amount)
-    {
-        if (amount <= 0)
-            throw new BadRequestException("Deposit amount must be positive");
-
-        Balance += amount;
-        Transactions.Add(new() { Type = TransactionType.Deposit, Amount = amount, AccountId = Id });
-    }
-
+    public abstract void Deposit(decimal amount);
     public abstract bool Withdraw(decimal amount, out string? error);
+
     public virtual void PrintStatement()
     {
-        Console.WriteLine($"{GetType().Name} statement for {Owner}");
+        Console.WriteLine($"\n{GetType().Name} statement for {Owner}");
         foreach (var transaction in Transactions.OrderByDescending(transaction => transaction.Date))
             Console.WriteLine($"{transaction.Date}: {transaction.Type} - {transaction.Amount:C}");
     }
