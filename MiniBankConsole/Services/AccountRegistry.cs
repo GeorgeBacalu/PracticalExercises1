@@ -9,11 +9,7 @@ public class AccountRegistry
 
     public static void GetAccounts()
     {
-        if (!Accounts.Any())
-        {
-            Console.WriteLine("No accounts found");
-            return;
-        }
+        if (!Accounts.Any()) { Console.WriteLine("No accounts found"); return; }
 
         Console.WriteLine("Bank accounts: ");
         Accounts.ForEach(Console.WriteLine);
@@ -21,7 +17,8 @@ public class AccountRegistry
 
     public static void CreateAccount()
     {
-        string owner, type = GetAccountType();
+        int type = GetAccountType();
+        string owner;
         decimal balance;
 
         while (true)
@@ -30,7 +27,7 @@ public class AccountRegistry
             owner = Console.ReadLine()?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(owner))
                 Console.WriteLine("Owner name is required");
-            else if (Accounts.Exists(account => account.Owner.ToLower() == owner.ToLower() && account.GetType().Name.Replace("Account", "").ToLower() == type))
+            else if (Accounts.Any(account => account.Owner.ToLower() == owner.ToLower() && account.GetType().Name == GetTypeName(type)))
                 Console.WriteLine("Owner name must be unique");
             else break;
         }
@@ -47,77 +44,71 @@ public class AccountRegistry
 
         BankAccount account = type switch
         {
-            "checking" => new CheckingAccount { Owner = owner, Balance = balance },
-            "savings" => new SavingsAccount { Owner = owner, Balance = balance },
-            "loan" => new LoanAccount { Owner = owner, Balance = -balance },
+            1 => new CheckingAccount { Owner = owner, Balance = balance },
+            2 => new SavingsAccount { Owner = owner, Balance = balance },
+            3 => new LoanAccount { Owner = owner, Balance = -balance },
             _ => throw new BadRequestException("Invalid account type")
         };
         Accounts.Add(account);
         account.Transactions.Add(new() { Type = TransactionType.Deposit, Amount = balance, AccountId = account.Id });
-        
         Console.WriteLine($"\nCreated #{Accounts.Count} {account.GetType().Name} for {owner} with balance {balance:C}");
     }
 
     public static void Deposit()
     {
-        string owner = GetOwner(), type = GetAccountType();
+        string owner = GetOwner();
+        int type = GetAccountType();
         decimal amount = GetAmount("deposit");
-        
-        var account = GetBankAccount(owner, type);
-        account.Deposit(amount);
+
+        GetAccount(owner, type).Deposit(amount);
     }
 
     public static void Withdraw()
     {
-        string owner = GetOwner(), type = GetAccountType();
+        string owner = GetOwner();
+        int type = GetAccountType();
         decimal amount = GetAmount("withdraw");
-        
-        var account = GetBankAccount(owner, type);
-        var withdrawSuccess = account.Withdraw(amount, out var error);
+
+        var withdrawSuccess = GetAccount(owner, type).Withdraw(amount, out var error);
         if (!withdrawSuccess) throw new BadRequestException(error ?? "Withdraw failed");
     }
 
     public static void ViewStatement()
     {
-        string owner = GetOwner(), type = GetAccountType();
-        
-        var account = GetBankAccount(owner, type);
-        account.PrintStatement();
+        string owner = GetOwner();
+        int type = GetAccountType();
+
+        GetAccount(owner, type).PrintStatement();
     }
 
     public static void RunMonthEndProcessing()
     {
-        foreach (var account in Accounts)
-            if (account is IInterestBearing interestBearing)
-                interestBearing.ApplyMonthlyInterest();
+        foreach (var account in Accounts.OfType<IInterestBearing>()) account.ApplyMonthlyInterest();
         Console.WriteLine("Month-end applied (interest/fees)");
     }
 
     private static string GetOwner()
     {
         string owner;
-
         while (true)
         {
             Console.Write("Enter owner's name: ");
             owner = Console.ReadLine()?.Trim() ?? "";
-            if (string.IsNullOrWhiteSpace(owner))
-                Console.WriteLine("Owner name is required");
+            if (string.IsNullOrWhiteSpace(owner)) Console.WriteLine("Owner name is required");
             else break;
         }
         return owner;
     }
 
-    private static string GetAccountType()
+    private static int GetAccountType()
     {
-        string type;
-
+        int type;
         while (true)
         {
-            Console.Write("Enter account type (checking/savings/loan): ");
-            type = Console.ReadLine()?.Trim().ToLower() ?? "";
-            if (type != "checking" && type != "savings" && type != "loan")
-                Console.WriteLine("Invalid or missing account type");
+            Console.Write("Enter account type (1 - checking, 2 - savings, 3 - loan): ");
+            var typeString = Console.ReadLine();
+            if (!int.TryParse(typeString, out type)) Console.WriteLine("Account type must be numeric");
+            else if (type < 1 || type > 3) Console.WriteLine("Enter a number between 1 and 3");
             else break;
         }
         return type;
@@ -126,25 +117,18 @@ public class AccountRegistry
     private static decimal GetAmount(string action)
     {
         decimal amount;
-
         while (true)
         {
             Console.Write($"Enter amount to {action}: ");
             var amountString = Console.ReadLine();
-            if (!decimal.TryParse(amountString, out amount))
-                Console.WriteLine("Amount must be numeric");
-            else if (amount <= 0)
-                Console.WriteLine("Amount must be positive");
+            if (!decimal.TryParse(amountString, out amount)) Console.WriteLine("Amount must be numeric");
+            else if (amount <= 0) Console.WriteLine("Amount must be positive");
             else break;
         }
         return amount;
     }
 
-    private static BankAccount GetBankAccount(string owner, string type)
-    {
-        var account = Accounts.FirstOrDefault(account => account.Owner == owner && account.GetType().Name.Replace("Account", "").ToLower() == type)
-            ?? throw new MissingResourceException("Account not found");
-        if (account.Id == Guid.Empty) throw new MissingResourceException("Account ID not found");
-        return account;
-    }
+    private static BankAccount GetAccount(string owner, int type) => Accounts.FirstOrDefault(account => account.Owner == owner && account.GetType().Name == GetTypeName(type)) ?? throw new MissingResourceException("Account not found");
+
+    private static string GetTypeName(int type) => type switch { 1 => nameof(CheckingAccount), 2 => nameof(SavingsAccount), 3 => nameof(LoanAccount), _ => throw new BadRequestException("Invalid account type") };
 }
