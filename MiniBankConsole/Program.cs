@@ -1,7 +1,8 @@
 ﻿using MiniBankConsole.Exceptions;
+using MiniBankConsole.Helpers;
 using MiniBankConsole.Services;
 
-AccountRegistry.Load();
+DataManager.Load();
 while (true)
 {
     try
@@ -23,12 +24,12 @@ while (true)
         switch (option)
         {
             case 1: AccountRegistry.GetAccounts(); break;
-            case 2: AccountRegistry.CreateAccount(); AccountRegistry.Save(); break;
-            case 3: AccountRegistry.Deposit(); AccountRegistry.Save(); break;
-            case 4: AccountRegistry.Withdraw(); AccountRegistry.Save(); break;
+            case 2: AccountRegistry.CreateAccount(); DataManager.Save(); break;
+            case 3: AccountRegistry.Deposit(); DataManager.Save(); break;
+            case 4: AccountRegistry.Withdraw(); DataManager.Save(); break;
             case 5: AccountRegistry.ViewStatement(); break;
-            case 6: AccountRegistry.RunMonthEndProcessing(); AccountRegistry.Save(); break;
-            case 7: AccountRegistry.Transfer(); AccountRegistry.Save(); break;
+            case 6: AccountRegistry.RunMonthEndProcessing(); DataManager.Save(); break;
+            case 7: AccountRegistry.Transfer(); DataManager.Save(); break;
             case 8: Console.WriteLine("Thanks for using the app"); return;
             default: throw new BadRequestException("Invalid option");
         }

@@ -1,31 +1,17 @@
 ﻿using MiniBankConsole.Exceptions;
+using MiniBankConsole.Helpers;
 using MiniBankConsole.Models;
 using MiniBankConsole.Models.Interfaces;
-using System.Text.Json;
 
 namespace MiniBankConsole.Services;
 public static class AccountRegistry
 {
-    public static List<BankAccount> Accounts { get; } = [];
-
-    private static readonly string JsonPath = Path.GetFullPath("../../../accounts.json");
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
-
-    public static void Load()
-    {
-        Accounts.Clear();
-        if (!File.Exists(JsonPath)) return;
-        Accounts.AddRange(JsonSerializer.Deserialize<List<BankAccount>>(File.ReadAllText(JsonPath)) ?? []);
-    }
-
-    public static void Save() => File.WriteAllText(JsonPath, JsonSerializer.Serialize(Accounts, JsonOptions));
-
     public static void GetAccounts()
     {
-        if (!Accounts.Any()) { Console.WriteLine("No accounts found"); return; }
+        if (!DataManager.Accounts.Any()) { Console.WriteLine("No accounts found"); return; }
 
         Console.WriteLine("Bank accounts: ");
-        Accounts.ForEach(Console.WriteLine);
+        DataManager.Accounts.ForEach(Console.WriteLine);
     }
 
     public static void CreateAccount()
@@ -39,7 +25,7 @@ public static class AccountRegistry
             Console.Write("Owner: ");
             owner = Console.ReadLine()?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(owner)) Console.WriteLine("Owner name is required");
-            else if (Accounts.Any(account => account.Owner == owner && account.GetType().Name == GetTypeName(type))) Console.WriteLine("Owner already has an account of this type");
+            else if (DataManager.Accounts.Any(account => account.Owner == owner && account.GetType().Name == GetTypeName(type))) Console.WriteLine("Owner already has an account of this type");
             else break;
         }
         while (true)
@@ -59,9 +45,9 @@ public static class AccountRegistry
             4 => new FixedDepositAccount() { Owner = owner, Balance = balance },
             _ => throw new BadRequestException("Invalid account type")
         };
-        Accounts.Add(account);
+        DataManager.Accounts.Add(account);
         account.Transactions.Add(new() { Type = type == 3 ? TransactionType.Withdraw : TransactionType.Deposit, Amount = balance, AccountId = account.Id });
-        Console.WriteLine($"\nCreated #{Accounts.Count} {account.GetType().Name} for {owner} with balance {balance:C}");
+        Console.WriteLine($"\nCreated #{DataManager.Accounts.Count} {account.GetType().Name} for {owner} with balance {balance:C}");
     }
 
     public static void Deposit()
@@ -92,7 +78,7 @@ public static class AccountRegistry
 
     public static void RunMonthEndProcessing()
     {
-        foreach (var account in Accounts.OfType<IInterestBearing>()) account.ApplyMonthlyInterest();
+        foreach (var account in DataManager.Accounts.OfType<IInterestBearing>()) account.ApplyMonthlyInterest();
         Console.WriteLine("Month-end applied (interest/fees)");
     }
 
@@ -161,7 +147,7 @@ public static class AccountRegistry
         }
     }
 
-    private static BankAccount GetAccount(string owner, int type) => Accounts.FirstOrDefault(account => account.Owner == owner && account.GetType().Name == GetTypeName(type)) ?? throw new MissingResourceException("Account not found");
+    private static BankAccount GetAccount(string owner, int type) => DataManager.Accounts.FirstOrDefault(account => account.Owner == owner && account.GetType().Name == GetTypeName(type)) ?? throw new MissingResourceException("Account not found");
 
     private static string GetTypeName(int type) => type switch { 1 => nameof(CheckingAccount), 2 => nameof(SavingsAccount), 3 => nameof(LoanAccount), 4 => nameof(FixedDepositAccount), _ => throw new BadRequestException("Invalid account type") };
 }
