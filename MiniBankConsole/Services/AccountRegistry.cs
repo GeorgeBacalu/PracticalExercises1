@@ -43,6 +43,7 @@ public class AccountRegistry
             1 => new CheckingAccount { Owner = owner, Balance = balance },
             2 => new SavingsAccount { Owner = owner, Balance = balance },
             3 => new LoanAccount { Owner = owner, Balance = -balance },
+            4 => new FixedDepositAccount(12) { Owner = owner, Balance = balance },
             _ => throw new BadRequestException("Invalid account type")
         };
         Accounts.Add(account);
@@ -113,10 +114,10 @@ public class AccountRegistry
         int type;
         while (true)
         {
-            Console.Write($"Enter {role} type (1 - checking, 2 - savings, 3 - loan): ");
+            Console.Write($"Enter {role} type (1 - checking, 2 - savings, 3 - loan, 4 - fixed deposit): ");
             var typeString = Console.ReadLine();
             if (!int.TryParse(typeString, out type)) Console.WriteLine("Account type must be numeric");
-            else if (type < 1 || type > 3) Console.WriteLine("Enter a number between 1 and 3");
+            else if (type < 1 || type > 4) Console.WriteLine("Enter a number between 1 and 4");
             else break;
         }
         return type;
@@ -149,5 +150,5 @@ public class AccountRegistry
 
     private static BankAccount GetAccount(string owner, int type) => Accounts.FirstOrDefault(account => account.Owner == owner && account.GetType().Name == GetTypeName(type)) ?? throw new MissingResourceException("Account not found");
 
-    private static string GetTypeName(int type) => type switch { 1 => nameof(CheckingAccount), 2 => nameof(SavingsAccount), 3 => nameof(LoanAccount), _ => throw new BadRequestException("Invalid account type") };
+    private static string GetTypeName(int type) => type switch { 1 => nameof(CheckingAccount), 2 => nameof(SavingsAccount), 3 => nameof(LoanAccount), 4 => nameof(FixedDepositAccount), _ => throw new BadRequestException("Invalid account type") };
 }
