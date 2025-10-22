@@ -8,46 +8,46 @@ public static class AccountRegistry
 {
     public static void GetAccounts()
     {
-        if (!DataManager.Accounts.Any()) { Console.WriteLine("No accounts found"); return; }
+        var accounts = AuthService.IsAuthenticated ? [.. DataManager.Accounts.Where(account => account.Owner == AuthService.CurrentUsername)] : DataManager.Accounts;
+        if (!accounts.Any()) { Console.WriteLine("No accounts found"); return; }
 
         Console.WriteLine("Bank accounts: ");
-        DataManager.Accounts.ForEach(Console.WriteLine);
+        accounts.ForEach(Console.WriteLine);
     }
 
     public static void CreateAccount()
     {
         int type = GetAccountType();
-        string owner;
+        string username;
         decimal balance;
 
         while (true)
         {
-            Console.Write("Owner: ");
-            owner = Console.ReadLine()?.Trim() ?? "";
-            if (string.IsNullOrWhiteSpace(owner)) Console.WriteLine("Owner name is required");
-            else if (DataManager.Accounts.Any(account => account.Owner == owner && account.GetType().Name == GetTypeName(type))) Console.WriteLine("Owner already has an account of this type");
+            Console.Write("Username: ");
+            username = Console.ReadLine()?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(username)) Console.WriteLine("Username is required");
+            else if (DataManager.Accounts.Any(account => account.Owner == username && account.GetType().Name == GetTypeName(type))) Console.WriteLine("User already has an account of this type");
             else break;
         }
         while (true)
         {
             Console.Write("Opening deposit: ");
-            var balanceString = Console.ReadLine();
-            if (!decimal.TryParse(balanceString, out balance)) Console.WriteLine("Opening deposit must be numeric");
+            if (!decimal.TryParse(Console.ReadLine(), out balance)) Console.WriteLine("Opening deposit must be numeric");
             else if (balance < 0) Console.WriteLine("Opening deposit must be positive");
             else break;
         }
 
         BankAccount account = type switch
         {
-            1 => new CheckingAccount { Owner = owner, Balance = balance },
-            2 => new SavingsAccount { Owner = owner, Balance = balance },
-            3 => new LoanAccount { Owner = owner, Balance = -balance },
-            4 => new FixedDepositAccount() { Owner = owner, Balance = balance },
+            1 => new CheckingAccount { Owner = username, Password = username, Balance = balance },
+            2 => new SavingsAccount { Owner = username, Password = username, Balance = balance },
+            3 => new LoanAccount { Owner = username, Password = username, Balance = -balance },
+            4 => new FixedDepositAccount() { Owner = username, Password = username, Balance = balance },
             _ => throw new BadRequestException("Invalid account type")
         };
         DataManager.Accounts.Add(account);
         account.Transactions.Add(new() { Type = type == 3 ? TransactionType.Withdraw : TransactionType.Deposit, Amount = balance, AccountId = account.Id });
-        Console.WriteLine($"\nCreated #{DataManager.Accounts.Count} {account.GetType().Name} for {owner} with balance {balance:C}");
+        Console.WriteLine($"\nCreated #{DataManager.Accounts.Count} {account.GetType().Name} for {username} with balance {balance:C}");
     }
 
     public static void Deposit()
@@ -84,19 +84,24 @@ public static class AccountRegistry
 
     public static void Transfer()
     {
-        string sender = GetRole("sender"), receiver = GetRole("receiver");
+        string sender = AuthService.CurrentUsername, receiver = GetRole("receiver");
         int senderType = GetAccountType("sender's account"), receiverType = GetAccountType("receiver's account");
         if (sender == receiver && senderType == receiverType) throw new BadRequestException("Sender and receiver must be different");
+        
         decimal amount = GetAmount("transfer");
+        var senderAccount = GetAccount(sender, senderType);
+        var receiverAccount = GetAccount(receiver, receiverType);
 
-        if (!GetAccount(sender, senderType).Withdraw(amount, out var error)) throw new BadRequestException(error ?? "Transfer failed");
-        GetAccount(receiver, receiverType).Deposit(amount);
+        if (!senderAccount.Withdraw(amount, out var error)) throw new BadRequestException(error ?? "Transfer failed");
+        receiverAccount.Deposit(amount);
 
         Console.WriteLine($"\nTransferred {amount:C} from {sender} ({GetTypeName(senderType)}) to {receiver} ({GetTypeName(receiverType)})");
     }
 
     private static string GetOwner()
     {
+        if (AuthService.IsAuthenticated) return AuthService.CurrentUsername;
+
         string owner;
         while (true)
         {
@@ -114,9 +119,8 @@ public static class AccountRegistry
         while (true)
         {
             Console.Write($"Enter {role} type (1 - checking, 2 - savings, 3 - loan, 4 - fixed deposit): ");
-            var typeString = Console.ReadLine();
-            if (!int.TryParse(typeString, out type)) Console.WriteLine("Account type must be numeric");
-            else if (type < 1 || type > 4) Console.WriteLine("Enter a number between 1 and 4");
+            if (!int.TryParse(Console.ReadLine(), out type)) Console.WriteLine("Account type must be numeric");
+            else if (type is < 1 or > 4) Console.WriteLine("Enter a number between 1 and 4");
             else break;
         }
         return type;
@@ -128,8 +132,7 @@ public static class AccountRegistry
         while (true)
         {
             Console.Write($"Enter amount to {action}: ");
-            var amountString = Console.ReadLine();
-            if (!decimal.TryParse(amountString, out amount)) Console.WriteLine("Amount must be numeric");
+            if (!decimal.TryParse(Console.ReadLine(), out amount)) Console.WriteLine("Amount must be numeric");
             else if (amount <= 0) Console.WriteLine("Amount must be positive");
             else break;
         }
