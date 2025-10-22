@@ -1,6 +1,12 @@
 ﻿using MiniBankConsole.Models.Interfaces;
+using System.Text.Json.Serialization;
 
 namespace MiniBankConsole.Models;
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(CheckingAccount), "checking")]
+[JsonDerivedType(typeof(SavingsAccount), "savings")]
+[JsonDerivedType(typeof(LoanAccount), "loan")]
+[JsonDerivedType(typeof(FixedDepositAccount), "fixed deposit")]
 public abstract class BankAccount : ITransactable, IStatement
 {
     public Guid Id { get; } = Guid.NewGuid();

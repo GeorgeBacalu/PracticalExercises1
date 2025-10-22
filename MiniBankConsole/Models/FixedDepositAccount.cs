@@ -3,7 +3,7 @@ using MiniBankConsole.Models.Interfaces;
 using static MiniBankConsole.Constants.Constants;
 
 namespace MiniBankConsole.Models;
-public class FixedDepositAccount(int termMonths) : BankAccount, IInterestBearing
+public class FixedDepositAccount: BankAccount, IInterestBearing
 {
     private readonly DateTime maturityDate = DateTime.UtcNow.AddMonths(termMonths);
 

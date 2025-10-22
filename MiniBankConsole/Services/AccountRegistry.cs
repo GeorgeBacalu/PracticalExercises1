@@ -1,11 +1,24 @@
 ﻿using MiniBankConsole.Exceptions;
 using MiniBankConsole.Models;
 using MiniBankConsole.Models.Interfaces;
+using System.Text.Json;
 
 namespace MiniBankConsole.Services;
-public class AccountRegistry
+public static class AccountRegistry
 {
     public static List<BankAccount> Accounts { get; } = [];
+
+    private static readonly string JsonPath = Path.GetFullPath("../../../accounts.json");
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+
+    public static void Load()
+    {
+        Accounts.Clear();
+        if (!File.Exists(JsonPath)) return;
+        Accounts.AddRange(JsonSerializer.Deserialize<List<BankAccount>>(File.ReadAllText(JsonPath)) ?? []);
+    }
+
+    public static void Save() => File.WriteAllText(JsonPath, JsonSerializer.Serialize(Accounts, JsonOptions));
 
     public static void GetAccounts()
     {
@@ -43,7 +56,7 @@ public class AccountRegistry
             1 => new CheckingAccount { Owner = owner, Balance = balance },
             2 => new SavingsAccount { Owner = owner, Balance = balance },
             3 => new LoanAccount { Owner = owner, Balance = -balance },
-            4 => new FixedDepositAccount(12) { Owner = owner, Balance = balance },
+            4 => new FixedDepositAccount() { Owner = owner, Balance = balance },
             _ => throw new BadRequestException("Invalid account type")
         };
         Accounts.Add(account);
