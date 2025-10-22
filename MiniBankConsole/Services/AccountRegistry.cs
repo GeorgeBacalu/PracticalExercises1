@@ -18,17 +18,10 @@ public static class AccountRegistry
     public static void CreateAccount()
     {
         int type = GetAccountType();
-        string username;
-        decimal balance;
+        string username = AuthService.IsAuthenticated ? AuthService.CurrentUsername : GetOwner();
+        if (DataManager.Accounts.Any(account => account.Owner == username && account.GetType().Name == GetTypeName(type))) { Console.WriteLine("User already has an account of this type"); return; }
 
-        while (true)
-        {
-            Console.Write("Username: ");
-            username = Console.ReadLine()?.Trim() ?? "";
-            if (string.IsNullOrWhiteSpace(username)) Console.WriteLine("Username is required");
-            else if (DataManager.Accounts.Any(account => account.Owner == username && account.GetType().Name == GetTypeName(type))) Console.WriteLine("User already has an account of this type");
-            else break;
-        }
+        decimal balance;
         while (true)
         {
             Console.Write("Opening deposit: ");
@@ -37,12 +30,13 @@ public static class AccountRegistry
             else break;
         }
 
+        var password = (AuthService.IsAuthenticated ? DataManager.Accounts.FirstOrDefault(account => account.Owner == username) : null)?.Password ?? username;
         BankAccount account = type switch
         {
-            1 => new CheckingAccount { Owner = username, Password = username, Balance = balance },
-            2 => new SavingsAccount { Owner = username, Password = username, Balance = balance },
-            3 => new LoanAccount { Owner = username, Password = username, Balance = -balance },
-            4 => new FixedDepositAccount() { Owner = username, Password = username, Balance = balance },
+            1 => new CheckingAccount { Owner = username, Password = password, Balance = balance },
+            2 => new SavingsAccount { Owner = username, Password = password, Balance = balance },
+            3 => new LoanAccount { Owner = username, Password = password, Balance = -balance },
+            4 => new FixedDepositAccount() { Owner = username, Password = password, Balance = balance },
             _ => throw new BadRequestException("Invalid account type")
         };
         DataManager.Accounts.Add(account);
