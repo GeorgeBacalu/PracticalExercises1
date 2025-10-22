@@ -12,10 +12,12 @@ while (true)
         Console.WriteLine("4. Withdraw");
         Console.WriteLine("5. View statement");
         Console.WriteLine("6. Run month-end");
-        Console.WriteLine("7. Exit");
+        Console.WriteLine("7. Transfer");
+        Console.WriteLine("8. Exit");
         Console.Write("\nChoose your option: ");
 
-        int option = Convert.ToInt32(Console.ReadLine());
+        if (!int.TryParse(Console.ReadLine(), out var option))
+            throw new BadRequestException("Option must be numeric");
         Console.WriteLine();
         switch (option)
         {
@@ -25,7 +27,8 @@ while (true)
             case 4: AccountRegistry.Withdraw(); break;
             case 5: AccountRegistry.ViewStatement(); break;
             case 6: AccountRegistry.RunMonthEndProcessing(); break;
-            case 7: Console.WriteLine("Thanks for using the app"); return;
+            case 7: AccountRegistry.Transfer(); break;
+            case 8: Console.WriteLine("Thanks for using the app"); return;
             default: throw new BadRequestException("Invalid option");
         }
     }

@@ -8,4 +8,4 @@ public class Transaction
     public Guid AccountId { get; init; }
 }
 
-public enum TransactionType { Invalid, Deposit, Withdraw, Transfer, Interest }
+public enum TransactionType { Invalid, Deposit, Withdraw, Interest }

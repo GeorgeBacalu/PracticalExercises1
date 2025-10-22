@@ -25,20 +25,16 @@ public class AccountRegistry
         {
             Console.Write("Owner: ");
             owner = Console.ReadLine()?.Trim() ?? "";
-            if (string.IsNullOrWhiteSpace(owner))
-                Console.WriteLine("Owner name is required");
-            else if (Accounts.Any(account => account.Owner.ToLower() == owner.ToLower() && account.GetType().Name == GetTypeName(type)))
-                Console.WriteLine("Owner name must be unique");
+            if (string.IsNullOrWhiteSpace(owner)) Console.WriteLine("Owner name is required");
+            else if (Accounts.Any(account => account.Owner == owner && account.GetType().Name == GetTypeName(type))) Console.WriteLine("Owner already has an account of this type");
             else break;
         }
         while (true)
         {
             Console.Write("Opening deposit: ");
             var balanceString = Console.ReadLine();
-            if (!decimal.TryParse(balanceString, out balance))
-                Console.WriteLine("Opening deposit must be numeric");
-            else if (balance < 0)
-                Console.WriteLine("Opening deposit must be positive");
+            if (!decimal.TryParse(balanceString, out balance)) Console.WriteLine("Opening deposit must be numeric");
+            else if (balance < 0) Console.WriteLine("Opening deposit must be positive");
             else break;
         }
 
@@ -50,7 +46,7 @@ public class AccountRegistry
             _ => throw new BadRequestException("Invalid account type")
         };
         Accounts.Add(account);
-        account.Transactions.Add(new() { Type = TransactionType.Deposit, Amount = balance, AccountId = account.Id });
+        account.Transactions.Add(new() { Type = type == 3 ? TransactionType.Withdraw : TransactionType.Deposit, Amount = balance, AccountId = account.Id });
         Console.WriteLine($"\nCreated #{Accounts.Count} {account.GetType().Name} for {owner} with balance {balance:C}");
     }
 
@@ -69,8 +65,7 @@ public class AccountRegistry
         int type = GetAccountType();
         decimal amount = GetAmount("withdraw");
 
-        var withdrawSuccess = GetAccount(owner, type).Withdraw(amount, out var error);
-        if (!withdrawSuccess) throw new BadRequestException(error ?? "Withdraw failed");
+        if (!GetAccount(owner, type).Withdraw(amount, out var error)) throw new BadRequestException(error ?? "Withdraw failed");
     }
 
     public static void ViewStatement()
@@ -87,6 +82,19 @@ public class AccountRegistry
         Console.WriteLine("Month-end applied (interest/fees)");
     }
 
+    public static void Transfer()
+    {
+        string sender = GetRole("sender"), receiver = GetRole("receiver");
+        int senderType = GetAccountType("sender's account"), receiverType = GetAccountType("receiver's account");
+        if (sender == receiver && senderType == receiverType) throw new BadRequestException("Sender and receiver must be different");
+        decimal amount = GetAmount("transfer");
+
+        if (!GetAccount(sender, senderType).Withdraw(amount, out var error)) throw new BadRequestException(error ?? "Transfer failed");
+        GetAccount(receiver, receiverType).Deposit(amount);
+
+        Console.WriteLine($"\nTransferred {amount:C} from {sender} ({GetTypeName(senderType)}) to {receiver} ({GetTypeName(receiverType)})");
+    }
+
     private static string GetOwner()
     {
         string owner;
@@ -100,12 +108,12 @@ public class AccountRegistry
         return owner;
     }
 
-    private static int GetAccountType()
+    private static int GetAccountType(string? role = "account")
     {
         int type;
         while (true)
         {
-            Console.Write("Enter account type (1 - checking, 2 - savings, 3 - loan): ");
+            Console.Write($"Enter {role} type (1 - checking, 2 - savings, 3 - loan): ");
             var typeString = Console.ReadLine();
             if (!int.TryParse(typeString, out type)) Console.WriteLine("Account type must be numeric");
             else if (type < 1 || type > 3) Console.WriteLine("Enter a number between 1 and 3");
@@ -126,6 +134,17 @@ public class AccountRegistry
             else break;
         }
         return amount;
+    }
+
+    private static string GetRole(string role)
+    {
+        while (true)
+        {
+            Console.Write($"Enter {role}'s name: ");
+            var name = Console.ReadLine()?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(name)) Console.WriteLine($"{role} name is required");
+            else return name;
+        }
     }
 
     private static BankAccount GetAccount(string owner, int type) => Accounts.FirstOrDefault(account => account.Owner == owner && account.GetType().Name == GetTypeName(type)) ?? throw new MissingResourceException("Account not found");
