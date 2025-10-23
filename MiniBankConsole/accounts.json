@@ -25,7 +25,7 @@
     "Transactions": []
   },
   {
-    "$type": "fixed deposit",
+    "$type": "fixeddeposit",
     "Id": "2cf2208b-ea38-4404-8870-21ae5c1d2a03",
     "Owner": "User4",
     "Password": "user4",

@@ -1,4 +1,5 @@
-﻿using MiniBankConsole.Models.Interfaces;
+﻿using MiniBankConsole.Helpers;
+using MiniBankConsole.Models.Interfaces;
 using System.Text.Json.Serialization;
 
 namespace MiniBankConsole.Models;
@@ -6,13 +7,15 @@ namespace MiniBankConsole.Models;
 [JsonDerivedType(typeof(CheckingAccount), "checking")]
 [JsonDerivedType(typeof(SavingsAccount), "savings")]
 [JsonDerivedType(typeof(LoanAccount), "loan")]
-[JsonDerivedType(typeof(FixedDepositAccount), "fixed deposit")]
+[JsonDerivedType(typeof(FixedDepositAccount), "fixeddeposit")]
 public abstract class BankAccount : ITransactable, IStatement
 {
     public Guid Id { get; } = Guid.NewGuid();
     public required string Owner { get; init; }
     public required string Password { get; init; }
     public decimal Balance { get; set; }
+    public required string Currency { get; init; } = "USD";
+    public required string Locale { get; init; } = "en-US";
 
     public List<Transaction> Transactions { get; } = [];
 
@@ -23,8 +26,8 @@ public abstract class BankAccount : ITransactable, IStatement
     {
         Console.WriteLine($"\n{GetType().Name} statement for {Owner}");
         foreach (var transaction in Transactions.OrderByDescending(transaction => transaction.Date))
-            Console.WriteLine($"{transaction.Date}: {transaction.Type} - {transaction.Amount:C}");
+            Console.WriteLine($"{transaction.Date}: {transaction.Type} - {CurrencyFormatter.Format(transaction.Amount, Currency, Locale)}");
     }
 
-    public override string ToString() => $"{GetType().Name} - Owner: {Owner}, Balance: {Balance:C}";
+    public override string ToString() => $"{GetType().Name} - Owner: {Owner}, Balance: {CurrencyFormatter.Format(Balance, Currency, Locale)}";
 }

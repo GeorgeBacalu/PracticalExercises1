@@ -11,7 +11,7 @@ public static class AuthService
     public static void Register()
     {
         int type = GetAccountType();
-        string username, password;
+        string username, password, selectedCurrency, selectedLocale;
 
         while (true)
         {
@@ -29,17 +29,33 @@ public static class AuthService
             else if (password.Length < 6) Console.WriteLine("Password must be at least 6 characters long");
             else break;
         }
+        while (true)
+        {
+            Console.Write("Enter preferred currency: ");
+            selectedCurrency = Console.ReadLine()?.Trim().ToUpper() ?? "";
+            if (!DataManager.Currencies.Any(currency => currency.Name.ToLower() == selectedCurrency.ToLower()))
+                Console.WriteLine("Invalid currency");
+            else break;
+        }
+        while (true)
+        {
+            Console.Write("Enter preferred locale: ");
+            selectedLocale = Console.ReadLine()?.Trim() ?? "";
+            if (!DataManager.Locales.Any(locale => locale.Code == selectedLocale))
+                Console.WriteLine("Invalid locale");
+            else break;
+        }
 
         BankAccount account = type switch
         {
-            1 => new CheckingAccount { Owner = username, Password = password },
-            2 => new SavingsAccount { Owner = username, Password = password },
-            3 => new LoanAccount { Owner = username, Password = password },
-            4 => new FixedDepositAccount() { Owner = username, Password = password },
+            1 => new CheckingAccount { Owner = username, Password = password, Currency = selectedCurrency, Locale = selectedLocale },
+            2 => new SavingsAccount { Owner = username, Password = password, Currency = selectedCurrency, Locale = selectedLocale },
+            3 => new LoanAccount { Owner = username, Password = password, Currency = selectedCurrency, Locale = selectedLocale },
+            4 => new FixedDepositAccount() { Owner = username, Password = password, Currency = selectedCurrency, Locale = selectedLocale },
             _ => throw new BadRequestException("Invalid account type")
         };
         DataManager.Accounts.Add(account);
-        Console.WriteLine($"\nRegistered {account.GetType().Name} for {username} with balance {0:C}");
+        Console.WriteLine($"\nRegistered {account.GetType().Name} for {username} with balance {CurrencyFormatter.Format(0, account.Currency, account.Locale)}");
         DataManager.Save();
     }
 

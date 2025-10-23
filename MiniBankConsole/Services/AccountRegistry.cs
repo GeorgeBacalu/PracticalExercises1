@@ -18,8 +18,9 @@ public static class AccountRegistry
     public static void CreateAccount()
     {
         int type = GetAccountType();
-        string username = AuthService.IsAuthenticated ? AuthService.CurrentUsername : GetOwner();
+        string username = AuthService.IsAuthenticated ? AuthService.CurrentUsername : GetOwner(), selectedCurrency, selectedLocale;
         if (DataManager.Accounts.Any(account => account.Owner == username && account.GetType().Name == GetTypeName(type))) { Console.WriteLine("User already has an account of this type"); return; }
+        string password = AuthService.IsAuthenticated ? DataManager.Accounts.First(account => account.Owner == username).Password : username;
 
         decimal balance;
         while (true)
@@ -29,19 +30,34 @@ public static class AccountRegistry
             else if (balance < 0) Console.WriteLine("Opening deposit must be positive");
             else break;
         }
+        while (true)
+        {
+            Console.Write("Enter preferred currency: ");
+            selectedCurrency = Console.ReadLine()?.Trim().ToUpper() ?? "";
+            if (!DataManager.Currencies.Any(currency => currency.Name.ToLower() == selectedCurrency.ToLower()))
+                Console.WriteLine("Invalid currency");
+            else break;
+        }
+        while (true)
+        {
+            Console.Write("Enter preferred locale: ");
+            selectedLocale = Console.ReadLine()?.Trim() ?? "";
+            if (!DataManager.Locales.Any(locale => locale.Code == selectedLocale))
+                Console.WriteLine("Invalid locale");
+            else break;
+        }
 
-        var password = (AuthService.IsAuthenticated ? DataManager.Accounts.FirstOrDefault(account => account.Owner == username) : null)?.Password ?? username;
         BankAccount account = type switch
         {
-            1 => new CheckingAccount { Owner = username, Password = password, Balance = balance },
-            2 => new SavingsAccount { Owner = username, Password = password, Balance = balance },
-            3 => new LoanAccount { Owner = username, Password = password, Balance = -balance },
-            4 => new FixedDepositAccount() { Owner = username, Password = password, Balance = balance },
+            1 => new CheckingAccount { Owner = username, Password = password, Balance = balance, Currency = selectedCurrency, Locale = selectedLocale },
+            2 => new SavingsAccount { Owner = username, Password = password, Balance = balance, Currency = selectedCurrency, Locale = selectedLocale },
+            3 => new LoanAccount { Owner = username, Password = password, Balance = -balance, Currency = selectedCurrency, Locale = selectedLocale },
+            4 => new FixedDepositAccount() { Owner = username, Password = password, Balance = balance, Currency = selectedCurrency, Locale = selectedLocale },
             _ => throw new BadRequestException("Invalid account type")
         };
         DataManager.Accounts.Add(account);
         account.Transactions.Add(new() { Type = type == 3 ? TransactionType.Withdraw : TransactionType.Deposit, Amount = balance, AccountId = account.Id });
-        Console.WriteLine($"\nCreated #{DataManager.Accounts.Count} {account.GetType().Name} for {username} with balance {balance:C}");
+        Console.WriteLine($"\nCreated #{DataManager.Accounts.Count} {account.GetType().Name} for {username} with balance {CurrencyFormatter.Format(balance, account.Currency, account.Locale)}");
     }
 
     public static void Deposit()
@@ -89,7 +105,7 @@ public static class AccountRegistry
         if (!senderAccount.Withdraw(amount, out var error)) throw new BadRequestException(error ?? "Transfer failed");
         receiverAccount.Deposit(amount);
 
-        Console.WriteLine($"\nTransferred {amount:C} from {sender} ({GetTypeName(senderType)}) to {receiver} ({GetTypeName(receiverType)})");
+        Console.WriteLine($"\nTransferred {CurrencyFormatter.Format(amount, senderAccount.Currency, senderAccount.Locale)} from {sender} ({GetTypeName(senderType)}) to {receiver} ({GetTypeName(receiverType)})");
     }
 
     private static string GetOwner()
