@@ -103,9 +103,10 @@ public static class AccountRegistry
         var receiverAccount = GetAccount(receiver, receiverType);
 
         if (!senderAccount.Withdraw(amount, out var error)) throw new BadRequestException(error ?? "Transfer failed");
-        receiverAccount.Deposit(amount);
+        var creditedAmount = CurrencyConverter.Convert(amount, senderAccount.Currency, receiverAccount.Currency);
+        receiverAccount.Deposit(creditedAmount);
 
-        Console.WriteLine($"\nTransferred {CurrencyFormatter.Format(amount, senderAccount.Currency, senderAccount.Locale)} from {sender} ({GetTypeName(senderType)}) to {receiver} ({GetTypeName(receiverType)})");
+        Console.WriteLine($"\nTransferred {CurrencyFormatter.Format(amount, senderAccount.Currency, senderAccount.Locale)} from {sender} ({GetTypeName(senderType)}) to {receiver} ({GetTypeName(receiverType)}) credited as {CurrencyFormatter.Format(creditedAmount, receiverAccount.Currency, receiverAccount.Locale)}");
     }
 
     private static string GetOwner()

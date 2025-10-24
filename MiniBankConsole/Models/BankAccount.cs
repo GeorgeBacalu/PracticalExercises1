@@ -14,8 +14,8 @@ public abstract class BankAccount : ITransactable, IStatement
     public required string Owner { get; init; }
     public required string Password { get; init; }
     public decimal Balance { get; set; }
-    public required string Currency { get; init; } = "USD";
-    public required string Locale { get; init; } = "en-US";
+    public string Currency { get; init; } = "USD";
+    public string Locale { get; init; } = "en-US";
 
     public List<Transaction> Transactions { get; } = [];
 
