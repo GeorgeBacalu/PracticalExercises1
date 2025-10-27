@@ -8,10 +8,10 @@ public static class AuthService
     public static bool IsAuthenticated { get; private set; } = false;
     public static string CurrentUser { get; private set; } = "";
 
-    public static void Register()
+    public static async Task RegisterAsync()
     {
-        int type = InputHelper.GetAccountType();
-        string username = InputHelper.GetUsername(type), password = InputHelper.GetPassword(), currency = InputHelper.GetCurrency(), locale = InputHelper.GetLocale();
+        int type = await InputHelper.GetAccountTypeAsync();
+        string username = await InputHelper.GetUsernameAsync(type), password = await InputHelper.GetPasswordAsync(), currency = await InputHelper.GetCurrencyAsync(), locale = await InputHelper.GetLocaleAsync();
 
         BankAccount account = type switch
         {
@@ -22,24 +22,24 @@ public static class AuthService
             _ => throw new BadRequestException("Invalid account type")
         };
         DataManager.Accounts.Add(account);
-        Console.WriteLine($"\nRegistered {account.GetType().Name} for {username} with balance {CurrencyFormatter.Format(0, account.Currency, account.Locale)}");
+        await Console.Out.WriteLineAsync($"\nRegistered {account.GetType().Name} for {username} with balance {CurrencyFormatter.Format(0, account.Currency, account.Locale)}");
     }
 
-    public static void Login()
+    public static async Task LoginAsync()
     {
-        string username = InputHelper.GetUsername(isRegister: false);
-        if (!DataManager.Accounts.Any(account => account.Owner == username)) throw new MissingResourceException("User not found");
+        string username = await InputHelper.GetUsernameAsync(isRegister: false);
+        if (!DataManager.Accounts.AsParallel().Any(account => account.Owner == username)) throw new MissingResourceException("User not found");
         
-        string password = InputHelper.GetPassword(isRegister: false);
-        var account = DataManager.Accounts.FirstOrDefault(account => account.Owner == username && account.Password == password) ?? throw new MissingResourceException("Invalid credentials");
+        string password = await InputHelper.GetPasswordAsync(isRegister: false);
+        var account = DataManager.Accounts.AsParallel().FirstOrDefault(account => account.Owner == username && account.Password == password) ?? throw new MissingResourceException("Invalid credentials");
         
         (IsAuthenticated, CurrentUser) = (true, username);
-        Console.WriteLine($"\nLogged in as {username} ({account.GetType().Name})");
+        await Console.Out.WriteLineAsync($"\nLogged in as {username} ({account.GetType().Name})");
     }
 
-    public static void Logout()
+    public static async Task LogoutAsync()
     {
         (IsAuthenticated, CurrentUser) = (false, "");
-        Console.WriteLine("Logged out");
+        await Console.Out.WriteLineAsync("Logged out");
     }
 }

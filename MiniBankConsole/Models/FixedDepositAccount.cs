@@ -37,5 +37,5 @@ public class FixedDepositAccount: BankAccount, IInterestBearing
         Balance += Balance * interestRate;
     }
 
-    public override string ToString() => $"{base.ToString()}, Maturity Date: {maturityDate:yyyy-MM-dd}";
+    public override string ToString() => $"{base.ToString()}, Maturity Date: {maturityDate}";
 }

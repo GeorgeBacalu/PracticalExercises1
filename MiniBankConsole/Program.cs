@@ -1,1 +1,1 @@
-﻿MiniBankConsole.MiniBank.Run();
+﻿await MiniBankConsole.MiniBank.RunAsync();
