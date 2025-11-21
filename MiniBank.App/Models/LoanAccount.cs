@@ -10,7 +10,7 @@ public class LoanAccount : BankAccount, IInterestBearing
         if (Balance + amount > 0) throw new BadRequestException("Transfer exceeds loan payoff amount");
 
         Balance += amount;
-        Transactions.Add(new() { Type = TransactionType.Deposit, Amount = amount, AccountId = Id });
+        Transactions.Add(new() { Id = Guid.NewGuid(), Type = TransactionType.Deposit, Amount = amount, AccountId = Id });
     }
 
     public override bool Withdraw(decimal amount, out string? error)
@@ -19,13 +19,13 @@ public class LoanAccount : BankAccount, IInterestBearing
 
         Balance -= amount;
         error = null;
-        Transactions.Add(new() { Type = TransactionType.Withdraw, Amount = amount, AccountId = Id });
+        Transactions.Add(new() { Id = Guid.NewGuid(), Type = TransactionType.Withdraw, Amount = amount, AccountId = Id });
         return true;
     }
 
     public void ApplyMonthlyInterest()
     {
-        Transactions.Add(new() { Type = TransactionType.Interest, Amount = Math.Abs(Balance * Constants.Constants.InterestRate), AccountId = Id });
+        Transactions.Add(new() { Id = Guid.NewGuid(), Type = TransactionType.Interest, Amount = Math.Abs(Balance * Constants.Constants.InterestRate), AccountId = Id });
         Balance += Balance * Constants.Constants.InterestRate;
     }
 }

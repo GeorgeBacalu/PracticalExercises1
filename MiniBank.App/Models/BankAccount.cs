@@ -10,7 +10,7 @@ namespace MiniBank.App.Models;
 [JsonDerivedType(typeof(FixedDepositAccount), "fixeddeposit")]
 public abstract class BankAccount : ITransactable, IStatement
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid Id { get; init; }
     public required string Owner { get; init; }
     public required string Password { get; init; }
     public decimal Balance { get; set; }

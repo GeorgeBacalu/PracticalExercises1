@@ -15,10 +15,10 @@ public static class AuthService
 
         BankAccount account = type switch
         {
-            1 => new CheckingAccount { Owner = username, Password = password, Currency = currency, Locale = locale },
-            2 => new SavingsAccount { Owner = username, Password = password, Currency = currency, Locale = locale },
-            3 => new LoanAccount { Owner = username, Password = password, Currency = currency, Locale = locale },
-            4 => new FixedDepositAccount() { Owner = username, Password = password, Currency = currency, Locale = locale },
+            1 => new CheckingAccount { Id = Guid.NewGuid(), Owner = username, Password = password, Currency = currency, Locale = locale },
+            2 => new SavingsAccount { Id = Guid.NewGuid(), Owner = username, Password = password, Currency = currency, Locale = locale },
+            3 => new LoanAccount { Id = Guid.NewGuid(), Owner = username, Password = password, Currency = currency, Locale = locale },
+            4 => new FixedDepositAccount { Id = Guid.NewGuid(), Owner = username, Password = password, Currency = currency, Locale = locale },
             _ => throw new BadRequestException("Invalid account type")
         };
         DataManager.Accounts.Add(account);

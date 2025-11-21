@@ -17,15 +17,15 @@ public class FixedDepositAccount: BankAccount, IInterestBearing
         if (total > Balance) { error = isEarly ? "Insufficient funds (including penalty)" : "Insufficient funds"; return false; }
 
         Balance -= total;
-        Transactions.Add(new() { Type = TransactionType.Withdraw, Amount = amount, AccountId = Id });
-        if (penalty > 0) Transactions.Add(new() { Type = TransactionType.Fee, Amount = penalty, AccountId = Id });
+        Transactions.Add(new() { Id = Guid.NewGuid(), Type = TransactionType.Withdraw, Amount = amount, AccountId = Id });
+        if (penalty > 0) Transactions.Add(new() { Id = Guid.NewGuid(), Type = TransactionType.Fee, Amount = penalty, AccountId = Id });
         error = null;
         return true;
     }
 
     public void ApplyMonthlyInterest()
     {
-        Transactions.Add(new() { Type = TransactionType.Interest, Amount = Balance * Constants.Constants.InterestRate, AccountId = Id });
+        Transactions.Add(new() { Id = Guid.NewGuid(), Type = TransactionType.Interest, Amount = Balance * Constants.Constants.InterestRate, AccountId = Id });
         Balance += Balance * Constants.Constants.InterestRate;
     }
 
