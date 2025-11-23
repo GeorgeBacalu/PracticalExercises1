@@ -11,7 +11,7 @@ public class CheckingAccount : BankAccount, IOverdraftPolicy
         if (amount <= 0) throw new BadRequestException("Deposit amount must be positive");
 
         Balance += amount;
-        Transactions.Add(new() { Type = TransactionType.Deposit, Amount = amount, AccountId = Id });
+        Transactions.Add(new() { Id = Guid.NewGuid(), Type = TransactionType.Deposit, Amount = amount, AccountId = Id });
     }
 
     public override bool Withdraw(decimal amount, out string? error)
@@ -21,7 +21,7 @@ public class CheckingAccount : BankAccount, IOverdraftPolicy
 
         Balance -= amount;
         error = null;
-        Transactions.Add(new() { Type = TransactionType.Withdraw, Amount = amount, AccountId = Id });
+        Transactions.Add(new() { Id = Guid.NewGuid(), Type = TransactionType.Withdraw, Amount = amount, AccountId = Id });
         return true;
     }
 }
