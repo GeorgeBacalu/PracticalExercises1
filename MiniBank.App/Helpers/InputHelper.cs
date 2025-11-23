@@ -10,7 +10,7 @@ public static class InputHelper
         {
             await Console.Out.WriteAsync($"Enter {role} type (1 - checking, 2 - savings, 3 - loan, 4 - fixed deposit): ");
             if (!int.TryParse(await Console.In.ReadLineAsync(), out int type)) { await Console.Out.WriteLineAsync("Account type must be numeric"); continue; }
-            else if (type is < 1 or > 4) { await Console.Out.WriteLineAsync("Enter a number between 1 and 4"); continue; }
+            else if (type is < 1 or > 4) { await Console.Out.WriteLineAsync("Account type must be between 1 and 4"); continue; }
             return type;
         }
     }

@@ -10,6 +10,7 @@ public static class AccountMock
     public static LoanAccount LoanAccountMock() => new() { Id = Guid.Parse("daaf94a6-15da-43fb-9422-20a019878f38"), Owner = "User3", Password = "user3", Balance = -1000m };
     public static FixedDepositAccount FixedDepositAccountMock() => new() { Id = Guid.Parse("2cf2208b-ea38-4404-8870-21ae5c1d2a03"), Owner = "User4", Password = "user4", Balance = 2000m };
 
+    public const decimal Amount = 1000m;
     public const decimal DepositAmount = 1000m;
     public const decimal DepositAmountOverPayoffLimit = 1001m;
     public const decimal NegativeDepositAmount = -1000m;
@@ -18,4 +19,7 @@ public static class AccountMock
     public const decimal WithdrawAmountOverLimitChecking = 1201m;
     public const decimal WithdrawAmountOverLimitNonChecking = 2001m;
     public const decimal NegativeWithdrawAmount = -1000m;
+
+    public static IEnumerable<object[]> LocalizedCurrencies => [[100m, "USD", "en-US", "$100.00"], [100m, "EUR", "fr-FR", "100,00€"], [100m, "JPY", "ja-JP", "￥100"]];
+    public static IEnumerable<object[]> AccountTypeNames => [[1, nameof(CheckingAccount)], [2, nameof(SavingsAccount)], [3, nameof(LoanAccount)], [4, nameof(FixedDepositAccount)]];
 }
