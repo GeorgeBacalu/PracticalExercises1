@@ -32,8 +32,8 @@ public static class AccountRegistry
             _ => throw new BadRequestException("Invalid account type")
         };
         DataManager.Accounts.Add(account);
-        account.Transactions.Add(new() { Id = Guid.NewGuid(), Type = type == 3 ? TransactionType.Withdraw : TransactionType.Deposit, Amount = balance, AccountId = account.Id });
-        await Console.Out.WriteLineAsync($"Created {account.GetType().Name} for {AuthService.CurrentUser} with balance {CurrencyFormatter.Format(balance, account.Currency, account.Locale)}");
+        account.Transactions.Add(new() { Id = Guid.NewGuid(), Type = type == 3 ? TransactionType.Withdraw : TransactionType.Deposit, Amount = Math.Abs(account.Balance), AccountId = account.Id });
+        await Console.Out.WriteLineAsync($"Created {account.GetType().Name} for {AuthService.CurrentUser} with balance {CurrencyFormatter.Format(account.Balance, account.Currency, account.Locale)}");
         await DataManager.SaveAsync();
     }
 

@@ -10,6 +10,12 @@ public static class AccountMock
     public static LoanAccount LoanAccountMock() => new() { Id = Guid.Parse("daaf94a6-15da-43fb-9422-20a019878f38"), Owner = "User3", Password = "user3", Balance = -1000m };
     public static FixedDepositAccount FixedDepositAccountMock() => new() { Id = Guid.Parse("2cf2208b-ea38-4404-8870-21ae5c1d2a03"), Owner = "User4", Password = "user4", Balance = 2000m };
 
+    public static CheckingAccount NewCheckingAccount() => new() { Owner = "User1", Password = "123456", Currency = "USD", Locale = "en-US", Balance = 100m };
+    public static SavingsAccount NewSavingsAccount() => new() { Owner = "User1", Password = "123456", Currency = "USD", Locale = "en-US", Balance = 100m };
+    public static SavingsAccount NewSavingsAccount2() => new() { Owner = "User1", Password = "123456", Currency = "EUR", Locale = "fr-FR", Balance = 100m };
+    public static LoanAccount NewLoanAccount() => new() { Owner = "User1", Password = "123456", Currency = "USD", Locale = "en-US", Balance = -50m };
+    public static CheckingAccount NewFixedDepositAccount() => new() { Owner = "User1", Password = "123456", Currency = "USD", Locale = "en-US", Balance = 100m };
+
     public const decimal Amount = 1000m;
     public const decimal DepositAmount = 1000m;
     public const decimal DepositAmountOverPayoffLimit = 1001m;
